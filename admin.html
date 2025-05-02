@@ -1,0 +1,36 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="UTF-8">
+    <title>Admin Panel</title>
+</head>
+<body>
+    <h1>Upload New Poll</h1>
+    <form id="poll-form">
+        <textarea name="poll" rows="10" cols="50" placeholder='Enter poll JSON (e.g., {"question":"Favorite color?","options":["Red","Blue"]} )' required></textarea>
+        <br>
+        <button type="submit">Upload Poll</button>
+    </form>
+
+    <script>
+        document.getElementById('poll-form').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const formData = new FormData(e.target);
+            const pollJson = formData.get('poll');
+            
+            try {
+                const res = await fetch('/api/upload', {
+                    method: 'POST',
+                    headers: {'Content-Type': 'application/json'},
+                    body: pollJson
+                });
+                
+                const result = await res.json();
+                alert(result.message);
+            } catch (error) {
+                alert('Upload failed: ' + error);
+            }
+        });
+    </script>
+</body>
+</html>
