@@ -3,74 +3,55 @@
 <html>
 <head>
   <title>Poll Voting</title>
+  <script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-database-compat.js"></script>
   <style>
-    body {
-      font-family: Arial, sans-serif;
-      background: #f2f2f2;
-      padding: 20px;
-      color: #333;
-    }
-    h1 {
-      text-align: center;
-      color: #222;
-    }
-    .poll {
-      background: #fff;
-      padding: 15px;
-      margin: 20px auto;
-      border-radius: 10px;
-      max-width: 500px;
-      box-shadow: 0 0 10px rgba(0,0,0,0.1);
-    }
-    .poll h3 {
-      margin-bottom: 10px;
-    }
-    .poll button {
-      margin: 5px;
-      padding: 10px 20px;
-      background: #4caf50;
-      color: white;
-      border: none;
-      border-radius: 5px;
-      cursor: pointer;
-    }
-    .poll button:hover {
-      background: #45a049;
-    }
+    body { font-family: Arial, sans-serif; background: #f2f2f2; padding: 20px; }
+    .poll { background: #fff; padding: 15px; margin: 20px auto; border-radius: 10px; max-width: 500px; box-shadow: 0 0 10px rgba(0,0,0,0.1); }
+    button { margin: 5px; padding: 10px 20px; background: #4caf50; color: white; border: none; border-radius: 5px; cursor: pointer; }
+    button:hover { background: #45a049; }
   </style>
 </head>
 <body>
   <h1>Vote on a Poll</h1>
-  <div id="poll-container"></div>
+  <div id="polls"></div>
 
   <script>
-    fetch('/api/polls')
-      .then(res => res.json())
-      .then(data => {
-        const container = document.getElementById('poll-container');
-        data.forEach((poll, index) => {
-          const div = document.createElement('div');
-          div.className = 'poll';
-          div.innerHTML = `
-            <h3>${poll.question}</h3>
-            <button onclick="vote(${index}, 0)"> ${poll.options[0]} </button>
-            <button onclick="vote(${index}, 1)"> ${poll.options[1]} </button>
-          `;
-          container.appendChild(div);
-        });
-      });
+    
+const firebaseConfig = {
+  apiKey: "AIzaSyBSHyltsIeUxR4rGVGKnxUpvBKh_MTbhhI",
+  authDomain: "polling-44fee.firebaseapp.com",
+  projectId: "polling-44fee",
+  storageBucket: "polling-44fee.firebasestorage.app",
+  messagingSenderId: "1064820591788",
+  appId: "1:1064820591788:web:ca762ac466f00818cd2309",
+  measurementId: "G-T2ELXFR3HR"
+};
 
-    function vote(pollIndex, optionIndex) {
-      fetch('/api/polls')
-        .then(res => res.json())
-        .then(data => {
-          data[pollIndex].votes[optionIndex]++;
-          fetch('/api/polls', {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify(data[pollIndex])
-          }).then(() => location.reload());
-        });
+    firebase.initializeApp(firebaseConfig);
+    const db = firebase.database();
+
+    const container = document.getElementById('polls');
+    db.ref('polls').on('value', snapshot => {
+      container.innerHTML = '';
+      const data = snapshot.val();
+      if (!data) return;
+      Object.keys(data).forEach(key => {
+        const poll = data[key];
+        const div = document.createElement('div');
+        div.className = 'poll';
+        div.innerHTML = `
+          <h3>\${poll.question}</h3>
+          <button onclick="vote('\${key}', 0)">\${poll.options[0]}</button>
+          <button onclick="vote('\${key}', 1)">\${poll.options[1]}</button>
+        `;
+        container.appendChild(div);
+      });
+    });
+
+    function vote(pollId, optionIndex) {
+      const ref = db.ref('polls/' + pollId + '/votes/' + optionIndex);
+      ref.transaction(current => (current || 0) + 1);
     }
   </script>
 </body>
