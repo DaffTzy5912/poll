@@ -2,18 +2,55 @@
 <!DOCTYPE html>
 <html>
 <head>
-  <title>Admin - Upload Poll</title>
-  <link rel="stylesheet" href="/css/style.css">
+  <title>Admin - Add Poll</title>
+  <script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-database-compat.js"></script>
+  <style>
+    body { font-family: Arial, sans-serif; background: #f2f2f2; padding: 20px; }
+    form { background: #fff; padding: 20px; max-width: 400px; margin: auto; border-radius: 10px; box-shadow: 0 0 10px rgba(0,0,0,0.1); }
+    input { width: 100%; margin-bottom: 10px; padding: 10px; }
+    button { padding: 10px 20px; background: #007bff; color: white; border: none; border-radius: 5px; cursor: pointer; }
+  </style>
 </head>
 <body>
   <h1>Upload a New Poll</h1>
   <form id="poll-form">
-    <input type="text" name="question" placeholder="Poll question" required><br>
-    <input type="text" name="option1" placeholder="Option 1" required><br>
-    <input type="text" name="option2" placeholder="Option 2" required><br>
-    <button type="submit">Upload</button>
+    <input type="text" name="question" placeholder="Poll question" required>
+    <input type="text" name="option1" placeholder="Option 1" required>
+    <input type="text" name="option2" placeholder="Option 2" required>
+    <button type="submit">Upload Poll</button>
   </form>
 
-  <script src="/js/admin.js"></script>
+  <script>
+    
+const firebaseConfig = {
+  apiKey: "AIzaSyBSHyltsIeUxR4rGVGKnxUpvBKh_MTbhhI",
+  authDomain: "polling-44fee.firebaseapp.com",
+  projectId: "polling-44fee",
+  storageBucket: "polling-44fee.firebasestorage.app",
+  messagingSenderId: "1064820591788",
+  appId: "1:1064820591788:web:ca762ac466f00818cd2309",
+  measurementId: "G-T2ELXFR3HR"
+};
+
+    firebase.initializeApp(firebaseConfig);
+    const db = firebase.database();
+
+    document.getElementById('poll-form').addEventListener('submit', function(e) {
+      e.preventDefault();
+      const question = e.target.question.value;
+      const option1 = e.target.option1.value;
+      const option2 = e.target.option2.value;
+
+      db.ref('polls').push({
+        question: question,
+        options: [option1, option2],
+        votes: [0, 0]
+      }).then(() => {
+        alert('Poll uploaded!');
+        e.target.reset();
+      });
+    });
+  </script>
 </body>
 </html>
